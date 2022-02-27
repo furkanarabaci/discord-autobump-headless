@@ -30,15 +30,8 @@ export default class DisboardBumpController {
 		for (let i = 0; i < this.bumpInstances.length; ++i) {
 			await this.bumpInstances[i].setBumpTimes();
 		}
-		const bumpTimesDiffInMinute = this.bumpInstances.map((instance) => {
-			const bumpAvailable = instance.nextBumpAvailable;
-			return Math.abs(now.diff(bumpAvailable, "minute"));
-		});
-
-		return bumpTimesDiffInMinute.some((minute) => {
-			console.info(minute);
-			return minute <= BUMP_MAX_WAIT_TIME;
-		});
+		const bumpTimesDiffInMinute = this.bumpInstances.map((instance) => Math.abs(now.diff(instance.nextBumpAvailable, "minute")));
+		return bumpTimesDiffInMinute.some((minute) => minute <= BUMP_MAX_WAIT_TIME);
 	}
 }
 
