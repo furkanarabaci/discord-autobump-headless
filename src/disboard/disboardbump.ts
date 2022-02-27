@@ -28,7 +28,7 @@ export default class DisboardBumpController {
 	async serversCloseToBump() {
 		const now = dayjs();
 		for (let i = 0; i < this.bumpInstances.length; ++i) {
-			await this.bumpInstances[i].setBumpTimes();
+			await this.bumpInstances[i].invalidateBump();
 		}
 		const bumpTimesDiffInMinute = this.bumpInstances.map((instance) => Math.abs(now.diff(instance.nextBumpAvailable, "minute")));
 		return bumpTimesDiffInMinute.some((minute) => minute <= BUMP_MAX_WAIT_TIME);
@@ -74,10 +74,10 @@ class DisboardBump {
 		this.bumpAvailable = await this.isBumpAvailable();
 		// If we come across that we can already bump, bump it here as well.
 		if (this.bumpAvailable) {
-			this.bump();
+			await this.bump();
 			this.bumpAvailable = false;
 		} else {
-			this.setBumpTimes();
+			await this.setBumpTimes();
 		}
 	}
 
