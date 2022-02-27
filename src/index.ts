@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { main } from "./headlessbrowser";
+import { main } from "./disboard/disboardmain";
 main();

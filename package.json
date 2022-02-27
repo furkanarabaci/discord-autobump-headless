@@ -7,6 +7,7 @@
   "author": "Furkan Arabacı <furkanarabaci@hotmail.com>",
   "license": "MIT",
   "dependencies": {
+    "dayjs": "^1.10.7",
     "dotenv": "^16.0.0",
     "playwright": "^1.19.2",
     "speakeasy": "^2.0.0",
