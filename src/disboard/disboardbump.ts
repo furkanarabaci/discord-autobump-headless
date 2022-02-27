@@ -63,7 +63,8 @@ class DisboardBump {
 		}
 		console.log(`[Disboard] Bumping the server with ID:${this.serverID}...`);
 		// await this.bumpElement.click(); This doesn't work due to bug: https://github.com/microsoft/playwright/issues/12298
-		this.page.goto(this.bumpURL); // Instead of clicking, navigate to the URL
+		await this.page.goto(this.bumpURL); // Instead of clicking, navigate to the URL
+		await this.page.waitForTimeout(2000); //Let's wait for a little while for good measure.
 		console.log(`[Disboard] Successfully bumped the server with ID:${this.serverID}.`);
 		this.bumpAvailable = false;
 		this.previousBumpTime = dayjs();
