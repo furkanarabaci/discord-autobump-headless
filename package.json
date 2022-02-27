@@ -1,0 +1,13 @@
+{
+  "name": "disboard-autobump-headless",
+  "version": "0.0.1",
+  "description": "A disboard bot that autobumps on a headless browser",
+  "main": "index.js",
+  "repository": "https://github.com/furkanarabaci/disboard-autobump-headless",
+  "author": "Furkan Arabacı <furkanarabaci@hotmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "typescript": "^4.5.5"
+  }
+}
