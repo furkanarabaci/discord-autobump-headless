@@ -50,6 +50,7 @@ class DisboardBump {
 		}
 		console.log(`[Disboard] Bumping the server: ${this.serverID} ...`);
 		await this.bumpElement.click();
+		console.log(`[Disboard] Successfully bumped the server: ${this.serverID} ...`);
 		this.bumpAvailable = false;
 		this.previousBumpTime = dayjs();
 		this.generateNewBumpTime();
@@ -76,7 +77,8 @@ class DisboardBump {
 	}
 	async isBumpAvailable() {
 		console.log(`[Disboard] getting bump status of server id: ${this.serverID}...`);
-		const bumpAvailable = (await this.getInnerTextOfBumpElement()).toLowerCase() === "bump";
+		const bumpText = await this.getInnerTextOfBumpElement();
+		const bumpAvailable = bumpText.toLowerCase().includes("bump");
 		if (bumpAvailable) {
 			console.log(`[Disboard] The server ${this.serverID} is available for bump.`);
 		} else {
