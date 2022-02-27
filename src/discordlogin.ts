@@ -23,9 +23,11 @@ const DISBOARD_URL = process.env.DISBOARD_URL || "";
  * @param page Uses the the previous page(e.g. disboard) which the login is requested
  */
 export async function login(context: BrowserContext, page: Page) {
-	await page.goto("/login");
+	if (!page.url().includes("/login")) {
+		await page.goto("/login");
+	}
 	//#region Username Password
-	if (page.url().includes(DISCORD_LOGIN_URL)) {
+	if (page.url().includes(DISCORD_LOGIN_URL) || page.url().includes(DISCORD_AUTHORIZE_URL)) {
 		console.log("[Discord] on Login page, filling info related to env...");
 		await page.fill('input[name="email"]', DISCORD_USERNAME);
 		await page.fill('input[name="password"]', DISCORD_PASSWORD);

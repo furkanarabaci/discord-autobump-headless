@@ -3,7 +3,7 @@ import { login } from "../discordlogin";
 import DisboardBumpController from "./disboardbump";
 
 const DISBOARD_URL = "https://disboard.org";
-const HEADLESS_MODE = !!process.env.HEADLESS_MODE;
+const HEADLESS_MODE = process.env.HEADLESS_MODE === "true";
 
 const DISBOARD_DASHBOARD_URL = "/dashboard/servers";
 const DISBOARD_LOGIN_URL = "/login";
@@ -21,7 +21,7 @@ let currentContext: BrowserContext | undefined;
 
 export async function main() {
 	if (currentBrowser) {
-		console.log("Closing previous browser and cleaning up...");
+		console.log("cleaning up...");
 		disposeBrowser();
 	}
 	console.log("Opening a new browser window...");
@@ -34,6 +34,7 @@ export async function main() {
 }
 
 function disposeBrowser() {
+	console.log("Closing the browser window...");
 	currentBrowser?.close();
 	currentBrowser = undefined;
 	currentContext = undefined;
@@ -44,10 +45,21 @@ async function openDisboardPage(context: BrowserContext) {
 	const page = await context.newPage();
 	await page.goto(DISBOARD_LOGIN_URL);
 	await login(context, page);
-	console.info("Discord login is successful, going to disboard dashboard...");
+	// console.info("Discord login is successful, going to disboard dashboard...");
 	await page.goto(DISBOARD_DASHBOARD_URL);
+	await prepareDisboardAndBumper(page);
+}
+
+async function prepareDisboardAndBumper(page: Page) {
 	const bumpElements = await getBumpElements(page);
 	const disboardBumpController = new DisboardBumpController(bumpElements, page);
+	const isThereAServerCloseToBump = await disboardBumpController.serversCloseToBump();
+	if (!isThereAServerCloseToBump) {
+		console.log("No server is available to bump soon, closing the browser...");
+		disposeBrowser(); // It means there are no server close to bump. Close the browser.
+	} else {
+		console.log("A server will be available to bump soon, waiting...");
+	}
 }
 
 async function getBumpElements(page: Page) {

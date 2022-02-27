@@ -7,6 +7,10 @@ dayjs.extend(RelativeTime);
 dayjs.extend(CustomParseFormat);
 
 const BUMP_TIMEOUT = 2; // in Hours
+/**
+ * In Minutes. If a server is soon enough to bump, keep the program running and wait for them to bump.
+ */
+const BUMP_MAX_WAIT_TIME = 20;
 const DISBOARD_SERVER_BUMP_PATTERN = "/server/bump/";
 const DISBOARD_TIME_LEFT_PATTERN = /[0][0-1]:[0-5][0-9]:[0-5][0-9]/;
 const DISBOARD_TIME_LEFT_FORMAT = "HH:mm:ss";
@@ -20,21 +24,36 @@ export default class DisboardBumpController {
 		console.info("[Disboard] Successfully landed on disboard and ready to bump.");
 		this.bumpInstances = locators.map((locator) => new DisboardBump(locator, this.page));
 	}
+
+	async serversCloseToBump() {
+		const now = dayjs();
+		for (let i = 0; i < this.bumpInstances.length; ++i) {
+			await this.bumpInstances[i].setBumpTimes();
+		}
+		const bumpTimesDiffInMinute = this.bumpInstances.map((instance) => {
+			const bumpAvailable = instance.nextBumpAvailable;
+			return Math.abs(now.diff(bumpAvailable, "minute"));
+		});
+
+		return bumpTimesDiffInMinute.some((minute) => {
+			console.info(minute);
+			return minute <= BUMP_MAX_WAIT_TIME;
+		});
+	}
 }
 
 class DisboardBump {
-	private bumpAvailable = false;
+	bumpAvailable = false;
 	private bumpTextElement: Locator;
 	private bumpElement: Locator;
-	private previousBumpTime: dayjs.Dayjs | undefined;
-	private nextBumpAvailable: dayjs.Dayjs | undefined;
-	private nextBumpTime: dayjs.Dayjs | undefined;
+	previousBumpTime: dayjs.Dayjs | undefined;
+	nextBumpAvailable: dayjs.Dayjs | undefined;
+	nextBumpTime: dayjs.Dayjs | undefined;
 	private serverID = "";
 	private bumpURL = "";
 	constructor(private locator: Locator, private page: Page) {
 		this.bumpElement = locator;
 		this.bumpTextElement = locator.last(); //Currently, disboard holds the bump text on the second span in the bump <a> element.
-		this.invalidateBump();
 	}
 
 	async getServerInformation() {
@@ -65,7 +84,7 @@ class DisboardBump {
 			this.bump();
 			this.bumpAvailable = false;
 		} else {
-			this.setRemainingTime();
+			this.setBumpTimes();
 		}
 	}
 
@@ -86,7 +105,7 @@ class DisboardBump {
 		return bumpAvailable;
 	}
 
-	async setRemainingTime() {
+	async setBumpTimes() {
 		const innerText = await this.getInnerTextOfBumpElement();
 		const isValidTime = DISBOARD_TIME_LEFT_PATTERN.test(innerText);
 		if (isValidTime) {
@@ -104,6 +123,7 @@ class DisboardBump {
 			const bumpHourText = bumpTimeFormatted.hour ? `${bumpTimeFormatted.hour} hours ` : "";
 			const bumpMinuteText = bumpTimeFormatted.minute ? `${bumpTimeFormatted.minute} minutes ` : "";
 			const bumpSecondText = bumpTimeFormatted.second ? `${bumpTimeFormatted.second} seconds` : "";
+			this.nextBumpAvailable = dayjs().add(bumpTimeFormatted.hour, "hour").add(bumpTimeFormatted.minute, "minutes").add(bumpTimeFormatted.second, "second");
 			console.log(`[Disboard] time left to bump server ${this.serverID}: ${bumpHourText}${bumpMinuteText}${bumpSecondText}`);
 		}
 	}
