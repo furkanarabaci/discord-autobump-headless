@@ -59,11 +59,9 @@ class DisboardBump {
 		this.bumpAvailable = await this.isBumpAvailable();
 		// If we come across that we can already bump, bump it here as well.
 		if (this.bumpAvailable) {
-			console.log(`[Disboard] The server ${this.serverID} is available for bump.`);
 			this.bump();
 			this.bumpAvailable = false;
 		} else {
-			console.log(`[Disboard] The server ${this.serverID} is not available for bump. Getting the time left to bump...`);
 			this.setRemainingTime();
 		}
 	}
@@ -78,7 +76,12 @@ class DisboardBump {
 	}
 	async isBumpAvailable() {
 		console.log(`[Disboard] getting bump status of server id: ${this.serverID}...`);
-		const bumpAvailable = (await this.getInnerTextOfBumpElement()) === "bump";
+		const bumpAvailable = (await this.getInnerTextOfBumpElement()).toLowerCase() === "bump";
+		if (bumpAvailable) {
+			console.log(`[Disboard] The server ${this.serverID} is available for bump.`);
+		} else {
+			console.log(`[Disboard] The server ${this.serverID} is not available for bump.`);
+		}
 		return bumpAvailable;
 	}
 
