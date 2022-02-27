@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import RelativeTime from "dayjs/plugin/relativeTime";
 import CustomParseFormat from "dayjs/plugin/customParseFormat";
-import { Locator } from "playwright";
+import { Locator, Page } from "playwright";
 
 dayjs.extend(RelativeTime);
 dayjs.extend(CustomParseFormat);
@@ -16,9 +16,9 @@ const MIN_RANDOM_MINUTE = 10;
 
 export default class DisboardBumpController {
 	private bumpInstances: DisboardBump[] = [];
-	constructor(private locators: Locator[]) {
+	constructor(private locators: Locator[], private page: Page) {
 		console.info("[Disboard] Successfully landed on disboard and ready to bump.");
-		this.bumpInstances = locators.map((locator) => new DisboardBump(locator));
+		this.bumpInstances = locators.map((locator) => new DisboardBump(locator, this.page));
 	}
 }
 
@@ -30,16 +30,17 @@ class DisboardBump {
 	private nextBumpAvailable: dayjs.Dayjs | undefined;
 	private nextBumpTime: dayjs.Dayjs | undefined;
 	private serverID = "";
-	constructor(private locator: Locator) {
+	private bumpURL = "";
+	constructor(private locator: Locator, private page: Page) {
 		this.bumpElement = locator;
 		this.bumpTextElement = locator.last(); //Currently, disboard holds the bump text on the second span in the bump <a> element.
-		this.getServerID();
 		this.invalidateBump();
 	}
 
-	async getServerID() {
+	async getServerInformation() {
 		const locatorHref = await this.locator.getAttribute("href");
 		this.serverID = locatorHref?.split(DISBOARD_SERVER_BUMP_PATTERN)[1] || "";
+		this.bumpURL = locatorHref || "";
 	}
 
 	async bump() {
@@ -48,9 +49,10 @@ class DisboardBump {
 			console.log(`[Disboard] Tried to bump the server was already recently bumped. Last bumped at ${previousBumpTimeText}`);
 			return; //Additional Guard
 		}
-		console.log(`[Disboard] Bumping the server: ${this.serverID} ...`);
-		await this.bumpElement.click();
-		console.log(`[Disboard] Successfully bumped the server: ${this.serverID} ...`);
+		console.log(`[Disboard] Bumping the server with ID:${this.serverID}...`);
+		// await this.bumpElement.click(); This doesn't work due to bug: https://github.com/microsoft/playwright/issues/12298
+		this.page.goto(this.bumpURL); // Instead of clicking, navigate to the URL
+		console.log(`[Disboard] Successfully bumped the server with ID:${this.serverID}.`);
 		this.bumpAvailable = false;
 		this.previousBumpTime = dayjs();
 		this.generateNewBumpTime();
@@ -76,14 +78,11 @@ class DisboardBump {
 		this.nextBumpTime = this.nextBumpAvailable.add(randomNewTime.minute, "minutes").add(randomNewTime.second, "second");
 	}
 	async isBumpAvailable() {
+		await this.getServerInformation();
 		console.log(`[Disboard] getting bump status of server id: ${this.serverID}...`);
 		const bumpText = await this.getInnerTextOfBumpElement();
 		const bumpAvailable = bumpText.toLowerCase().includes("bump");
-		if (bumpAvailable) {
-			console.log(`[Disboard] The server ${this.serverID} is available for bump.`);
-		} else {
-			console.log(`[Disboard] The server ${this.serverID} is not available for bump.`);
-		}
+		console.log(`[Disboard] The server ${this.serverID} is ${bumpAvailable ? "" : "not"} available for bump.`);
 		return bumpAvailable;
 	}
 

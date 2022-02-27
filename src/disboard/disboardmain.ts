@@ -29,7 +29,7 @@ export async function main() {
 	console.info("Discord login is successful, going to disboard dashboard...");
 	await page.goto(DISBOARD_DASHBOARD_URL);
 	const bumpElements = await getBumpElements(page);
-	const disboardBumpController = new DisboardBumpController(bumpElements);
+	const disboardBumpController = new DisboardBumpController(bumpElements, page);
 }
 
 async function getBumpElements(page: Page) {
