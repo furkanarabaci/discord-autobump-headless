@@ -9,13 +9,16 @@ const DISBOARD_DASHBOARD_URL = "/dashboard/servers";
 const DISBOARD_LOGIN_URL = "/login";
 const DISBOARD_SERVER_BUMP_PATTERN = "/server/bump/";
 
+const BROWSER_TIMEOUT = 2 * 1000 * 60; //2 minutes
+
 /**
  * If you change the save path, do not ever forget to put the new file to .gitignore
  */
 const STORAGE_SAVE_LOCATION = process.env.STORAGE_SAVE_LOCATION || "state.json";
 
 export async function main() {
-	const currentBrowser = await firefox.launch({ headless: HEADLESS_MODE });
+	console.log("Starting Disboard Bumper");
+	const currentBrowser = await firefox.launch({ headless: HEADLESS_MODE, timeout: BROWSER_TIMEOUT });
 	const currentContext = await currentBrowser.newContext({
 		baseURL: DISBOARD_URL,
 		storageState: STORAGE_SAVE_LOCATION,
@@ -23,12 +26,14 @@ export async function main() {
 	const page = await currentContext.newPage();
 	await page.goto(DISBOARD_LOGIN_URL);
 	await login(currentContext, page);
+	console.info("Discord login is successful, going to disboard dashboard...");
 	await page.goto(DISBOARD_DASHBOARD_URL);
 	const bumpElements = await getBumpElements(page);
 	const disboardBumpController = new DisboardBumpController(bumpElements);
 }
 
 async function getBumpElements(page: Page) {
+	console.info("[Disboard] on dashboard, collecting server(s) information...");
 	if (!page.url().includes(DISBOARD_DASHBOARD_URL)) {
 		await page.goto(DISBOARD_DASHBOARD_URL);
 	}

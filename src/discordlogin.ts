@@ -26,6 +26,7 @@ export async function login(context: BrowserContext, page: Page) {
 	await page.goto("/login");
 	//#region Username Password
 	if (page.url().includes(DISCORD_LOGIN_URL)) {
+		console.log("[Discord] on Login page, filling info related to env...");
 		await page.fill('input[name="email"]', DISCORD_USERNAME);
 		await page.fill('input[name="password"]', DISCORD_PASSWORD);
 		await page.click('button[type="submit"]');
@@ -40,6 +41,7 @@ export async function login(context: BrowserContext, page: Page) {
 	//#region OTP
 	const otp = getDiscordOTP();
 	if (otp && page.url().includes(DISCORD_OTP_URL)) {
+		console.log("[Discord] on 2FA page, filling OTP relevant to the secret given in environment...");
 		await page.fill("input", otp);
 		await page.click('button[type="submit"]');
 		await page.waitForNavigation({ url: DISCORD_OAUTH_URL_REGEXP });
@@ -49,20 +51,24 @@ export async function login(context: BrowserContext, page: Page) {
 
 	//#region Authorize Disboard
 	if (page.url().includes(DISCORD_AUTHORIZE_URL)) {
+		console.log("[Discord] on authorize page with Disboard...");
 		await page.locator("button").last().click();
 		await page.waitForNavigation({ url: new RegExp(`${DISBOARD_URL}`) }); //TODO: Find a better way to wait for authorization to be finished
 	}
 	//#endregion
 
 	//#region Save cookies
+	console.log(`Authorization is successful, Saving the login information to ${STORAGE_SAVE_LOCATION} file...`);
 	await context.storageState({ path: STORAGE_SAVE_LOCATION });
 	//#endregion
 }
 
 export function getDiscordOTP(secret?: string, encoding?: Encoding) {
 	if (!DISCORD_2FA_SECRET) {
+		console.error("Tried to get OTP but secret doesn't exist. Make sure you fill the value on .env file");
 		return "";
 	}
+	console.info("Getting OTP information...");
 	return speakeasy.totp({
 		secret: secret || DISCORD_2FA_SECRET,
 		encoding: encoding || DISCORD_2FA_ENCODING,
