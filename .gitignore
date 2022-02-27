@@ -103,8 +103,11 @@ dist
 # TernJS port file
 .tern-port
 
-yarn-error.log
+.DS_Store
 dist
 tsconfig.*
+.vscode/**
 
 .env
+# This JSON will store browser cookie and localStorage
+state.json 
