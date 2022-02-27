@@ -109,4 +109,5 @@ dist
 
 .env
 # This JSON will store browser cookie and localStorage
-state.json 
+state.json
+log.txt

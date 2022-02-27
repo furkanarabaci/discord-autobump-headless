@@ -1,4 +1,4 @@
-import { BrowserContext, firefox, Locator, Page } from "playwright";
+import { Browser, BrowserContext, firefox, Locator, Page } from "playwright";
 import { login } from "../discordlogin";
 import DisboardBumpController from "./disboardbump";
 
@@ -16,16 +16,34 @@ const BROWSER_TIMEOUT = 2 * 1000 * 60; //2 minutes
  */
 const STORAGE_SAVE_LOCATION = process.env.STORAGE_SAVE_LOCATION || "state.json";
 
+let currentBrowser: Browser | undefined;
+let currentContext: BrowserContext | undefined;
+
 export async function main() {
-	console.log("Starting Disboard Bumper");
-	const currentBrowser = await firefox.launch({ headless: HEADLESS_MODE, timeout: BROWSER_TIMEOUT });
-	const currentContext = await currentBrowser.newContext({
+	if (currentBrowser) {
+		console.log("Closing previous browser and cleaning up...");
+		disposeBrowser();
+	}
+	console.log("Opening a new browser window...");
+	currentBrowser = await firefox.launch({ headless: HEADLESS_MODE, timeout: BROWSER_TIMEOUT });
+	currentContext = await currentBrowser.newContext({
 		baseURL: DISBOARD_URL,
 		storageState: STORAGE_SAVE_LOCATION,
 	});
-	const page = await currentContext.newPage();
+	await openDisboardPage(currentContext);
+}
+
+function disposeBrowser() {
+	currentBrowser?.close();
+	currentBrowser = undefined;
+	currentContext = undefined;
+}
+
+async function openDisboardPage(context: BrowserContext) {
+	console.log("Opening a new disboard page...");
+	const page = await context.newPage();
 	await page.goto(DISBOARD_LOGIN_URL);
-	await login(currentContext, page);
+	await login(context, page);
 	console.info("Discord login is successful, going to disboard dashboard...");
 	await page.goto(DISBOARD_DASHBOARD_URL);
 	const bumpElements = await getBumpElements(page);
