@@ -17,6 +17,8 @@ async function main() {
 	await disboardMain();
 }
 
+main();
+
 setInterval(() => {
 	console.log("Interval reached, re-executing the bumper...");
 	main();
