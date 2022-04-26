@@ -56,6 +56,7 @@ class DisboardBump {
 	}
 
 	async bump() {
+		console.log("[Disboard] Starting Bumper");
 		if (!this.bumpAvailable) {
 			const previousBumpTimeText = this.previousBumpTime ? dayjs().from(this.previousBumpTime) : "unknown";
 			console.log(`[Disboard] Tried to bump the server was already recently bumped. Last bumped at ${previousBumpTimeText}`);
@@ -70,6 +71,8 @@ class DisboardBump {
 		this.previousBumpTime = dayjs();
 		this.generateNewBumpTime();
 		// After this, page will refresh
+		console.log(`[Disboard] Closing the page after bump is successful.`);
+		this.page.close();
 	}
 	async invalidateBump() {
 		this.bumpAvailable = await this.isBumpAvailable();

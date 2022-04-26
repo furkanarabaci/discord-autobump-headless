@@ -19,33 +19,34 @@ const STORAGE_SAVE_LOCATION = process.env.STORAGE_SAVE_LOCATION || "state.json";
 let currentBrowser: Browser | undefined;
 let currentContext: BrowserContext | undefined;
 
-export async function main() {
+export async function disboardMain() {
 	if (currentBrowser) {
-		console.log("cleaning up...");
-		disposeBrowser();
+		console.log("[Disboard] cleaning up after re-start...");
+		disposeDisboardBrowser();
 	}
-	console.log("Opening a new browser window...");
-	currentBrowser = await firefox.launch({ headless: HEADLESS_MODE, timeout: BROWSER_TIMEOUT });
+	console.log("[Disboard] Opening a new browser window...");
+	currentBrowser = await firefox.launch({ headless: HEADLESS_MODE, timeout: BROWSER_TIMEOUT, handleSIGHUP: false, handleSIGINT: false, handleSIGTERM: false });
 	currentContext = await currentBrowser.newContext({
 		baseURL: DISBOARD_URL,
 		storageState: STORAGE_SAVE_LOCATION,
 	});
 	await openDisboardPage(currentContext);
+	return currentBrowser;
 }
 
-function disposeBrowser() {
-	console.log("Closing the browser window...");
+export function disposeDisboardBrowser() {
+	console.log("[Disboard] Closing the browser window...");
 	currentBrowser?.close();
 	currentBrowser = undefined;
 	currentContext = undefined;
 }
 
 async function openDisboardPage(context: BrowserContext) {
-	console.log("Opening a new disboard page...");
+	console.log("[Disboard] Opening a new page...");
 	const page = await context.newPage();
 	await page.goto(DISBOARD_LOGIN_URL);
 	await login(context, page);
-	// console.info("Discord login is successful, going to disboard dashboard...");
+	console.info("[Disboard] Discord login is successful, going to disboard dashboard...");
 	await page.goto(DISBOARD_DASHBOARD_URL);
 	await prepareDisboardAndBumper(page);
 }
@@ -55,10 +56,10 @@ async function prepareDisboardAndBumper(page: Page) {
 	const disboardBumpController = new DisboardBumpController(bumpElements, page);
 	const isThereAServerCloseToBump = await disboardBumpController.serversCloseToBump();
 	if (!isThereAServerCloseToBump) {
-		console.log("No server is available to bump soon, closing the browser...");
-		disposeBrowser(); // It means there are no server close to bump. Close the browser.
+		console.log("[Disboard] No server is available to bump soon, closing the browser...");
+		disposeDisboardBrowser(); // It means there are no server close to bump. Close the browser.
 	} else {
-		console.log("A server will be available to bump soon, waiting...");
+		console.log("[Disboard] A server will be available to bump soon, waiting...");
 	}
 }
 

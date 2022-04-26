@@ -29,15 +29,19 @@ export async function login(context: BrowserContext, page: Page) {
 	//#region Username Password
 	if (page.url().includes(DISCORD_LOGIN_URL) || page.url().includes(DISCORD_AUTHORIZE_URL)) {
 		console.log("[Discord] on Login page, filling info related to env...");
-		await page.fill('input[name="email"]', DISCORD_USERNAME);
-		await page.fill('input[name="password"]', DISCORD_PASSWORD);
-		await page.click('button[type="submit"]');
-		/**
-		 * TODO: Figure out the action if OTP does not exist on the server.
-		 * Lately, discord doesn't allow admins and moderators to not have OTP,
-		 * therefore this might be ignored. Check it out if somebody complains about it.
-		 */
-		await page.waitForResponse(/.*login.*/, { timeout: 10000 });
+		try {
+			await page.fill('input[name="email"]', DISCORD_USERNAME, { timeout: 3000 });
+			await page.fill('input[name="password"]', DISCORD_PASSWORD);
+			await page.click('button[type="submit"]');
+			/**
+			 * TODO: Figure out the action if OTP does not exist on the server.
+			 * Lately, discord doesn't allow admins and moderators to not have OTP,
+			 * therefore this might be ignored. Check it out if somebody complains about it.
+			 */
+			await page.waitForResponse(/.*login.*/);
+		} catch (e) {
+			console.log("[Discord] we are on login url but auth screen shows up, didnt understand this weird url handling. Just continue.");
+		}
 	}
 	//#endregion
 	//#region OTP
@@ -60,17 +64,17 @@ export async function login(context: BrowserContext, page: Page) {
 	//#endregion
 
 	//#region Save cookies
-	console.log(`Authorization is successful, Saving the login information to ${STORAGE_SAVE_LOCATION} file...`);
+	console.log(`[Discord] Authorization is successful, Saving the login information to ${STORAGE_SAVE_LOCATION} file...`);
 	await context.storageState({ path: STORAGE_SAVE_LOCATION });
 	//#endregion
 }
 
 export function getDiscordOTP(secret?: string, encoding?: Encoding) {
 	if (!DISCORD_2FA_SECRET) {
-		console.error("Tried to get OTP but secret doesn't exist. Make sure you fill the value on .env file");
+		console.error("[Discord] Tried to get OTP but secret doesn't exist. Make sure you fill the value on .env file");
 		return "";
 	}
-	console.info("Getting OTP information...");
+	console.info("[Discord] Getting OTP information...");
 	return speakeasy.totp({
 		secret: secret || DISCORD_2FA_SECRET,
 		encoding: encoding || DISCORD_2FA_ENCODING,
