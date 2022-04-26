@@ -65,7 +65,7 @@ export async function login(context: BrowserContext, page: Page) {
 
 	//#region Authorize Disboard
 	if (page.url().includes(DISCORD_AUTHORIZE_URL)) {
-		console.log("[Discord] on authorize page with Disboard...");
+		console.log("[Discord] on authorize page");
 		await page.locator("button").last().click();
 		await page.waitForNavigation(); //TODO: Find a better way to wait for authorization to be finished
 	}

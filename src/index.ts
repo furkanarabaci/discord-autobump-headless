@@ -11,13 +11,15 @@ const MAXIMUM_ERROR_COUNT = 5;
 let errorCount = 0; // This is to prevent the browsers to be in infinite loop if the error repeatedly occurs..
 
 console.log("Starting Bumper Services");
-disboardMain();
-discordlistMain();
+
+async function main() {
+	await discordlistMain();
+	await disboardMain();
+}
 
 setInterval(() => {
 	console.log("Interval reached, re-executing the bumper...");
-	disboardMain();
-	discordlistMain();
+	main();
 	errorCount = 0; //Re-try again
 }, RELAUNCH_INTERVAL);
 
@@ -26,8 +28,7 @@ process.on("uncaughtException", (err) => {
 	if (errorCount < MAXIMUM_ERROR_COUNT) {
 		console.log("Restarting the browsers...");
 		// These will also dispose the current one if necessary.
-		disboardMain();
-		discordlistMain();
+		main();
 		errorCount++;
 	} else {
 		console.log(`Maximum of ${MAXIMUM_ERROR_COUNT} have been reached, will not execute until ${RELAUNCH_INTERVAL} elapsed...`);
