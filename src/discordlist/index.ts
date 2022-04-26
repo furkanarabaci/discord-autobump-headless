@@ -56,7 +56,7 @@ async function prepareDiscordListAndBumper(page: Page) {
 	// const isThereAServerCloseToBump = await DiscordListBumpController.serversCloseToBump();
 	if (bumpElements.length === 0) {
 		console.log("[Discordlist] No server is available to bump, closing the browser...");
-		// disposeDiscordListBrowser(); // It means there are no server close to bump. Close the browser.
+		disposeDiscordListBrowser(); // It means there are no server close to bump. Close the browser.
 	} else {
 		console.log("[Discordlist] A server will be bumped soon, waiting...");
 		new DiscordListBumpController(bumpElements, page);
