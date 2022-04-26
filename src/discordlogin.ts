@@ -8,12 +8,14 @@ const DISCORD_PASSWORD = process.env.DISCORD_PASSWORD || "";
  */
 const STORAGE_SAVE_LOCATION = process.env.STORAGE_SAVE_LOCATION || "state.json";
 const DISCORD_LOGIN_URL = "https://discord.com/login";
-const DISCORD_OTP_URL = `${DISCORD_LOGIN_URL}?redirect_to`;
+const DISCORD_OTP_URL = `${DISCORD_LOGIN_URL}?redirect_to=%2Foauth2%2Fauthorize`;
 const DISCORD_AUTHORIZE_URL = `https://discord.com/oauth2/authorize`;
 const DISCORD_OAUTH_URL_REGEXP = /.*oauth2\/authorize/;
 
 const DISCORD_2FA_SECRET = process.env.DISCORD_2FA_SECRET || "";
 const DISCORD_2FA_ENCODING = (process.env.DISCORD_2FA_ENCODING as Encoding) || "base32"; //base32 is used as default on OTP
+
+const OTP_TIMEOUT = 30 * 1000; // 30 seconds
 
 /**
  *
@@ -46,9 +48,17 @@ export async function login(context: BrowserContext, page: Page) {
 	const otp = getDiscordOTP();
 	if (otp && page.url().includes(DISCORD_OTP_URL)) {
 		console.log("[Discord] on 2FA page, filling OTP relevant to the secret given in environment...");
-		await page.fill("input", otp);
-		await page.click('button[type="submit"]');
-		await page.waitForNavigation({ url: DISCORD_OAUTH_URL_REGEXP });
+		try {
+			await page.fill("input", otp);
+			await page.click('button[type="submit"]');
+			await page.waitForNavigation({ url: DISCORD_OAUTH_URL_REGEXP, timeout: OTP_TIMEOUT });
+		} catch (e) {
+			console.log("[Discord] OTP probably failed, re-try....");
+			const newOTP = getDiscordOTP();
+			await page.fill("input", newOTP);
+			await page.click('button[type="submit"]');
+			await page.waitForNavigation({ url: DISCORD_OAUTH_URL_REGEXP });
+		}
 	}
 	//TODO: If OTP is invalid, you should try again
 	//#endregion
