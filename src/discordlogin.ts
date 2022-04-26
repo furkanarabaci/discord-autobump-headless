@@ -15,8 +15,6 @@ const DISCORD_OAUTH_URL_REGEXP = /.*oauth2\/authorize/;
 const DISCORD_2FA_SECRET = process.env.DISCORD_2FA_SECRET || "";
 const DISCORD_2FA_ENCODING = (process.env.DISCORD_2FA_ENCODING as Encoding) || "base32"; //base32 is used as default on OTP
 
-const DISBOARD_URL = process.env.DISBOARD_URL || "";
-
 /**
  *
  * @param context Uses the context of the open instance (e.g. disboard)
@@ -59,7 +57,7 @@ export async function login(context: BrowserContext, page: Page) {
 	if (page.url().includes(DISCORD_AUTHORIZE_URL)) {
 		console.log("[Discord] on authorize page with Disboard...");
 		await page.locator("button").last().click();
-		await page.waitForNavigation({ url: new RegExp(`${DISBOARD_URL}`) }); //TODO: Find a better way to wait for authorization to be finished
+		await page.waitForNavigation(); //TODO: Find a better way to wait for authorization to be finished
 	}
 	//#endregion
 
