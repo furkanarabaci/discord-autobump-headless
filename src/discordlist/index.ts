@@ -74,7 +74,6 @@ async function getBumpElements(page: Page) {
 	for (let i = 0; i < linkCount; ++i) {
 		const currentElement = linkElements.nth(i);
 		const currentText = await currentElement.innerHTML();
-		console.info(currentText);
 		if (currentText?.includes(DISCORDLIST_SERVER_BUMP_TEXT)) {
 			bumpElements.push(currentElement);
 		}

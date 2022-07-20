@@ -44,9 +44,12 @@ export function disposeDisboardBrowser() {
 async function openDisboardPage(context: BrowserContext) {
 	console.log("[Disboard] Opening a new page...");
 	const page = await context.newPage();
+	await page.waitForTimeout(1000);
 	await page.goto(DISBOARD_LOGIN_URL);
+	await page.waitForTimeout(1000);
 	await login(context, page);
 	console.info("[Disboard] Discord login is successful, going to disboard dashboard...");
+	await page.waitForTimeout(1000);
 	await page.goto(DISBOARD_DASHBOARD_URL);
 	await prepareDisboardAndBumper(page);
 }
