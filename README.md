@@ -11,7 +11,8 @@ This service uses `playwright` to simulate browser actions and executes it headl
 1. Launch this command: `cp .env.template .env`
 2. Fill your authorization information on the `.env` file. DO NOT EVER COMMIT THIS FILE OR REMOVE FROM .GITIGNORE
 3. Create a `state.json` file on your root or the value you have at `STORAGE_SAVE_LOCATION` variable.
-4. Execute the following commands:
+4. Add `{}` to your `state.json` file
+5. Execute the following commands:
 
 ```
 yarn
