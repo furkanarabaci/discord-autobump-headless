@@ -48,6 +48,7 @@ export async function login(context: BrowserContext, page: Page) {
 	const otp = getDiscordOTP();
 	if (otp && page.url().includes(DISCORD_OTP_URL)) {
 		console.log("[Discord] on 2FA page, filling OTP relevant to the secret given in environment...");
+		await page.waitForLoadState();
 		try {
 			await page.fill("input", otp);
 			await page.click('button[type="submit"]');

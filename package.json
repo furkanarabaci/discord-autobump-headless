@@ -7,15 +7,16 @@
   "author": "Furkan Arabacı <furkanarabaci@hotmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@vercel/ncc": "^0.36.1",
     "dayjs": "^1.10.7",
     "dotenv": "^16.0.0",
-    "playwright": "^1.19.2",
+    "playwright": "^1.36.2",
     "speakeasy": "^2.0.0",
     "typescript": "^4.5.5"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
+    "build": "ncc build src/index.ts -m",
+    "watch": "ncc build src/index.ts -w",
     "start": "node index.js"
   },
   "devDependencies": {

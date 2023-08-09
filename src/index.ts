@@ -13,7 +13,7 @@ let errorCount = 0; // This is to prevent the browsers to be in infinite loop if
 console.log("Starting Bumper Services");
 
 async function main() {
-	await discordlistMain();
+	// await discordlistMain(); Discordlist is shut down, hence don't launch
 	await disboardMain();
 }
 
@@ -35,6 +35,6 @@ process.on("uncaughtException", (err) => {
 	} else {
 		console.log(`Maximum of ${MAXIMUM_ERROR_COUNT} have been reached, will not execute until ${RELAUNCH_INTERVAL} elapsed...`);
 		disposeDisboardBrowser();
-		disposeDiscordListBrowser();
+		// disposeDiscordListBrowser(); Discordlist is shut down, hence don't launch
 	}
 });
